@@ -1,7 +1,9 @@
 package com.github.lbrcic4219rn.dddtennisleague.presentation.standing;
 
 import com.github.lbrcic4219rn.dddtennisleague.application.standing.dto.MatchDto;
-import com.github.lbrcic4219rn.dddtennisleague.application.standing.MatchPlayApplicationService;
+import com.github.lbrcic4219rn.dddtennisleague.application.standing.MatchApplicationService;
+import com.github.lbrcic4219rn.dddtennisleague.application.standing.dto.SetDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,13 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/matches")
-public class MatchPlayController {
-    private final MatchPlayApplicationService matchService;
-
-    public MatchPlayController(MatchPlayApplicationService matchService) {
-        this.matchService = matchService;
-    }
+public class MatchController {
+    private final MatchApplicationService matchService;
 
     @PostMapping
     public ResponseEntity<String> createMatch(@RequestBody CreateMatchRequest request) {
@@ -39,9 +38,7 @@ public class MatchPlayController {
             @RequestBody CompleteMatchRequest request) {
         matchService.completeMatch(
                 matchId,
-                request.winnerId(),
-                request.loserId(),
-                request.walkover()
+                request.sets()
         );
         return ResponseEntity.ok().build();
     }
@@ -81,9 +78,7 @@ public class MatchPlayController {
     }
 
     public record CompleteMatchRequest(
-            String winnerId,
-            String loserId,
-            boolean walkover
+             List<SetDto> sets
     ) {
     }
 }

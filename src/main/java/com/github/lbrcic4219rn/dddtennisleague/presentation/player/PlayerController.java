@@ -2,7 +2,8 @@ package com.github.lbrcic4219rn.dddtennisleague.presentation.player;
 
 import com.github.lbrcic4219rn.dddtennisleague.application.player.PlayerApplicationService;
 import com.github.lbrcic4219rn.dddtennisleague.application.player.dto.PlayerDto;
-import com.github.lbrcic4219rn.dddtennisleague.domain.player.PlayerId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.player.id.PlayerId;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,13 +19,10 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/players")
 public class PlayerController {
     private final PlayerApplicationService playerService;
-
-    public PlayerController(PlayerApplicationService playerService) {
-        this.playerService = playerService;
-    }
 
     @PostMapping
     public ResponseEntity<String> registerPlayer(@RequestBody RegisterPlayerRequest request) {

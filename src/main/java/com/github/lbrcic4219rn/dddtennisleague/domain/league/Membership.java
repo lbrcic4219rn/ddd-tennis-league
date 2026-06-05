@@ -1,15 +1,20 @@
 package com.github.lbrcic4219rn.dddtennisleague.domain.league;
 
-import com.github.lbrcic4219rn.dddtennisleague.domain.player.PlayerId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.GroupId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.MembershipId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.player.id.PlayerId;
+import lombok.Getter;
 
 import java.time.Instant;
 import java.util.UUID;
 
+@Getter
 public class Membership {
-    private MembershipId id;
-    private GroupId groupId;
-    private PlayerId playerId;
-    private Instant joinedAt;
+    private final MembershipId id;
+    private final GroupId groupId;
+    private final PlayerId playerId;
+    private final Instant joinedAt;
+
     private MembershipStatus status;
 
     public Membership(GroupId groupId, PlayerId playerId, MembershipStatus status) {
@@ -20,35 +25,17 @@ public class Membership {
         this.status = status;
     }
 
-    public Membership(MembershipId id, GroupId groupId, PlayerId playerId, Instant joinedAt, MembershipStatus status) {
-        this.id = id;
-        this.groupId = groupId;
-        this.playerId = playerId;
-        this.joinedAt = joinedAt;
-        this.status = status;
+    public void activateMembership() {
+        if (status.equals(MembershipStatus.ACTIVE)) {
+            throw new IllegalStateException("Membership is already active.");
+        }
+        this.status = MembershipStatus.ACTIVE;
     }
 
-    public MembershipId getId() {
-        return id;
-    }
-
-    public GroupId getGroupId() {
-        return groupId;
-    }
-
-    public PlayerId getPlayerId() {
-        return playerId;
-    }
-
-    public Instant getJoinedAt() {
-        return joinedAt;
-    }
-
-    public MembershipStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(MembershipStatus status) {
-        this.status = status;
+    public void deactivateMembership() {
+        if (status.equals(MembershipStatus.INACTIVE)) {
+            throw new IllegalStateException("Membership is already inactive.");
+        }
+        this.status = MembershipStatus.INACTIVE;
     }
 }

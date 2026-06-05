@@ -2,6 +2,7 @@ package com.github.lbrcic4219rn.dddtennisleague.presentation.league;
 
 import com.github.lbrcic4219rn.dddtennisleague.application.league.MembershipApplicationService;
 import com.github.lbrcic4219rn.dddtennisleague.application.league.dto.MembershipDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,13 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/memberships")
 public class MembershipController {
     private final MembershipApplicationService membershipService;
-
-    public MembershipController(MembershipApplicationService membershipService) {
-        this.membershipService = membershipService;
-    }
 
     @PostMapping("/join")
     public ResponseEntity<String> joinGroup(@RequestBody JoinGroupRequest request) {

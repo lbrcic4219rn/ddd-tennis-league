@@ -1,8 +1,8 @@
 package com.github.lbrcic4219rn.dddtennisleague.infrastructure.persistence;
 
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.League;
-import com.github.lbrcic4219rn.dddtennisleague.domain.league.LeagueId;
-import com.github.lbrcic4219rn.dddtennisleague.domain.league.LeagueRepo;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.LeagueId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.repo.LeagueRepo;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;

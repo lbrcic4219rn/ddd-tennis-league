@@ -1,4 +1,7 @@
-package com.github.lbrcic4219rn.dddtennisleague.domain.league;
+package com.github.lbrcic4219rn.dddtennisleague.domain.league.repo;
+
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.League;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.LeagueId;
 
 import java.util.Map;
 import java.util.Optional;

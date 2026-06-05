@@ -2,9 +2,9 @@ package com.github.lbrcic4219rn.dddtennisleague.presentation.league;
 
 import com.github.lbrcic4219rn.dddtennisleague.application.league.dto.GroupDto;
 import com.github.lbrcic4219rn.dddtennisleague.application.league.dto.LeagueDto;
-import com.github.lbrcic4219rn.dddtennisleague.application.league.LeagueManagementApplicationService;
-import com.github.lbrcic4219rn.dddtennisleague.domain.league.GroupId;
-import com.github.lbrcic4219rn.dddtennisleague.domain.league.LeagueId;
+import com.github.lbrcic4219rn.dddtennisleague.application.league.LeagueApplicationService;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.GroupId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.LeagueId;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.SkillLevel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +22,10 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/leagues")
-public class LeagueManagementController {
-    private final LeagueManagementApplicationService leagueService;
+public class LeagueController {
+    private final LeagueApplicationService leagueService;
 
-    public LeagueManagementController(LeagueManagementApplicationService leagueService) {
+    public LeagueController(LeagueApplicationService leagueService) {
         this.leagueService = leagueService;
     }
 

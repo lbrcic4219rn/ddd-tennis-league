@@ -1,9 +1,9 @@
 package com.github.lbrcic4219rn.dddtennisleague.infrastructure.persistence;
 
-import com.github.lbrcic4219rn.dddtennisleague.domain.league.GroupId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.GroupId;
 import com.github.lbrcic4219rn.dddtennisleague.domain.standing.Leaderboard;
-import com.github.lbrcic4219rn.dddtennisleague.domain.standing.LeaderboardId;
-import com.github.lbrcic4219rn.dddtennisleague.domain.standing.LeaderboardRepo;
+import com.github.lbrcic4219rn.dddtennisleague.domain.standing.id.LeaderboardId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.standing.repo.LeaderboardRepo;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;

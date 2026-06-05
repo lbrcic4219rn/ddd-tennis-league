@@ -1,4 +1,4 @@
-package com.github.lbrcic4219rn.dddtennisleague.domain.league;
+package com.github.lbrcic4219rn.dddtennisleague.domain.league.id;
 
 import java.util.UUID;
 

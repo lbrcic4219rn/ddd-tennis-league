@@ -2,6 +2,7 @@ package com.github.lbrcic4219rn.dddtennisleague.presentation.standing;
 
 import com.github.lbrcic4219rn.dddtennisleague.application.standing.dto.LeaderboardDto;
 import com.github.lbrcic4219rn.dddtennisleague.application.standing.StandingsApplicationService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,13 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/standings")
 public class StandingsController {
     private final StandingsApplicationService standingsService;
-
-    public StandingsController(StandingsApplicationService standingsService) {
-        this.standingsService = standingsService;
-    }
 
     @PostMapping
     public ResponseEntity<String> createLeaderboard(@RequestBody CreateLeaderboardRequest request) {

@@ -1,12 +1,16 @@
 package com.github.lbrcic4219rn.dddtennisleague.application.standing;
 
 import com.github.lbrcic4219rn.dddtennisleague.application.standing.dto.MatchDto;
-import com.github.lbrcic4219rn.dddtennisleague.domain.league.GroupId;
-import com.github.lbrcic4219rn.dddtennisleague.domain.player.PlayerId;
+import com.github.lbrcic4219rn.dddtennisleague.application.standing.dto.SetDto;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.GroupId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.repo.MembershipRepo;
+import com.github.lbrcic4219rn.dddtennisleague.domain.player.id.PlayerId;
 import com.github.lbrcic4219rn.dddtennisleague.domain.standing.Match;
-import com.github.lbrcic4219rn.dddtennisleague.domain.standing.MatchId;
-import com.github.lbrcic4219rn.dddtennisleague.domain.standing.MatchRepo;
-import com.github.lbrcic4219rn.dddtennisleague.domain.standing.MatchResult;
+import com.github.lbrcic4219rn.dddtennisleague.domain.standing.Set;
+import com.github.lbrcic4219rn.dddtennisleague.domain.standing.TieBreak;
+import com.github.lbrcic4219rn.dddtennisleague.domain.standing.id.MatchId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.standing.repo.MatchRepo;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,24 +19,25 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-public class MatchPlayApplicationService {
+@RequiredArgsConstructor
+public class MatchApplicationService {
     private final MatchRepo matchRepo;
+    private final MembershipRepo membershipRepo;
     private final StandingsApplicationService standingsService;
 
-    public MatchPlayApplicationService(MatchRepo matchRepo, StandingsApplicationService standingsService) {
-        this.matchRepo = matchRepo;
-        this.standingsService = standingsService;
-    }
-
-    public String createMatch(String groupId, String homePlayerId, String awayPlayerId) {
-        // Invariant: Both players must be in the same group (validated by service caller)
+    public String createMatch(String groupId, String player1Id, String player2Id) {
         GroupId groupIdObj = new GroupId(UUID.fromString(groupId));
-        PlayerId homePlayerIdObj = new PlayerId(UUID.fromString(homePlayerId));
-        PlayerId awayPlayerIdObj = new PlayerId(UUID.fromString(awayPlayerId));
+        PlayerId homePlayerIdObj = new PlayerId(UUID.fromString(player1Id));
+        PlayerId awayPlayerIdObj = new PlayerId(UUID.fromString(player2Id));
 
         if (homePlayerIdObj.equals(awayPlayerIdObj)) {
             throw new IllegalArgumentException("Home and away player must be different");
         }
+
+        membershipRepo.findByGroupIdAndPlayerId(groupIdObj, homePlayerIdObj)
+                .orElseThrow(() -> new IllegalArgumentException("Player is not a member of the group: " + player1Id));
+        membershipRepo.findByGroupIdAndPlayerId(groupIdObj, awayPlayerIdObj)
+                .orElseThrow(() -> new IllegalArgumentException("Player is not a member of the group: " + player2Id));
 
         Match match = new Match(groupIdObj, homePlayerIdObj, awayPlayerIdObj);
         matchRepo.save(match);
@@ -40,22 +45,25 @@ public class MatchPlayApplicationService {
         return match.getId().value().toString();
     }
 
-    public void completeMatch(String matchId, String winnerId, String loserId, boolean walkover) {
+    public void completeMatch(String matchId, List<SetDto> completedSets) {
         MatchId matchIdObj = new MatchId(UUID.fromString(matchId));
-        PlayerId winnerIdObj = new PlayerId(UUID.fromString(winnerId));
-        PlayerId loserIdObj = new PlayerId(UUID.fromString(loserId));
 
         Optional<Match> match = matchRepo.findById(matchIdObj);
         if (match.isEmpty()) {
             throw new IllegalArgumentException("Match not found: " + matchId);
         }
 
+        List<Set> sets = completedSets.stream()
+                .map(dto -> new Set(dto.player1Games(), dto.player2Games()
+                        , dto.tiebreakDto() != null
+                        ? new TieBreak(dto.tiebreakDto().player1Points(), dto.tiebreakDto().player2Points())
+                        : null))
+                .toList();
+
         Match matchObj = match.get();
-        MatchResult result = new MatchResult(winnerIdObj, loserIdObj, walkover);
-        matchObj.setResult(result);
+        matchObj.completeMatch(sets);
         matchRepo.save(matchObj);
 
-        // Trigger leaderboard update (invariant: MatchCompleted event recalculates standings)
         standingsService.updateStandingsForMatch(matchObj);
     }
 
@@ -86,17 +94,16 @@ public class MatchPlayApplicationService {
     }
 
     private MatchDto convertToDto(Match match) {
-        String winnerId = match.getResult() != null ? match.getResult().winner().value().toString() : null;
-        String loserId = match.getResult() != null ? match.getResult().loser().value().toString() : null;
+        PlayerId winner = match.getWinner();
+        PlayerId loserId = match.getPlayer1id().equals(winner) ? match.getPlayer2id() : match.getPlayer1id();
 
         return new MatchDto(
                 match.getId().value().toString(),
                 match.getGroupId().value().toString(),
-                match.getHomePlayer().value().toString(),
-                match.getAwayPlayer().value().toString(),
-                winnerId,
-                loserId,
-                match.getResult() != null ? match.getResult().walkover() : false
+                match.getPlayer1id().value().toString(),
+                match.getPlayer2id().value().toString(),
+                winner.value().toString(),
+                loserId.value().toString()
         );
     }
 }

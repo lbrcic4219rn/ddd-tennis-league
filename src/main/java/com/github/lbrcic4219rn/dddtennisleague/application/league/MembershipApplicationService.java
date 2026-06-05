@@ -2,13 +2,13 @@ package com.github.lbrcic4219rn.dddtennisleague.application.league;
 
 import com.github.lbrcic4219rn.dddtennisleague.application.league.dto.MembershipDto;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.Group;
-import com.github.lbrcic4219rn.dddtennisleague.domain.league.GroupId;
-import com.github.lbrcic4219rn.dddtennisleague.domain.league.GroupRepo;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.GroupId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.repo.GroupRepo;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.Membership;
-import com.github.lbrcic4219rn.dddtennisleague.domain.league.MembershipId;
-import com.github.lbrcic4219rn.dddtennisleague.domain.league.MembershipRepo;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.MembershipId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.repo.MembershipRepo;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.MembershipStatus;
-import com.github.lbrcic4219rn.dddtennisleague.domain.player.PlayerId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.player.id.PlayerId;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

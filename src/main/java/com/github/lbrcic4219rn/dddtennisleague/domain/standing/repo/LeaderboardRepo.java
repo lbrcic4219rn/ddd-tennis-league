@@ -1,6 +1,8 @@
-package com.github.lbrcic4219rn.dddtennisleague.domain.standing;
+package com.github.lbrcic4219rn.dddtennisleague.domain.standing.repo;
 
-import com.github.lbrcic4219rn.dddtennisleague.domain.league.GroupId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.GroupId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.standing.Leaderboard;
+import com.github.lbrcic4219rn.dddtennisleague.domain.standing.id.LeaderboardId;
 
 import java.util.List;
 import java.util.Optional;

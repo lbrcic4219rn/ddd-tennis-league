@@ -3,8 +3,8 @@ package com.github.lbrcic4219rn.dddtennisleague.application.player;
 import com.github.lbrcic4219rn.dddtennisleague.application.player.dto.PlayerDto;
 import com.github.lbrcic4219rn.dddtennisleague.domain.player.ContactInformation;
 import com.github.lbrcic4219rn.dddtennisleague.domain.player.Player;
-import com.github.lbrcic4219rn.dddtennisleague.domain.player.PlayerId;
-import com.github.lbrcic4219rn.dddtennisleague.domain.player.PlayerRepo;
+import com.github.lbrcic4219rn.dddtennisleague.domain.player.id.PlayerId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.player.repo.PlayerRepo;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;

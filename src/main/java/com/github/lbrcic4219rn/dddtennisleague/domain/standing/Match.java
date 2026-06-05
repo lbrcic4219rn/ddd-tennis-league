@@ -1,66 +1,63 @@
 package com.github.lbrcic4219rn.dddtennisleague.domain.standing;
 
-import com.github.lbrcic4219rn.dddtennisleague.domain.league.GroupId;
-import com.github.lbrcic4219rn.dddtennisleague.domain.player.PlayerId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.GroupId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.player.id.PlayerId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.standing.id.MatchId;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Getter
 public class Match {
     private MatchId id;
     private GroupId groupId;
-    private PlayerId homePlayer;
-    private PlayerId awayPlayer;
-    private MatchResult result;
+    private PlayerId player1id;
+    private PlayerId player2id;
     private List<Set> sets;
+    private MatchStatus status;
 
-    public Match(GroupId groupId, PlayerId homePlayer, PlayerId awayPlayer) {
+    public Match(GroupId groupId, PlayerId player1id, PlayerId player2id) {
         this.id = new MatchId(UUID.randomUUID());
         this.groupId = groupId;
-        this.homePlayer = homePlayer;
-        this.awayPlayer = awayPlayer;
+        this.player1id = player1id;
+        this.player2id = player2id;
         this.sets = new ArrayList<>();
+        this.status = MatchStatus.SCHEDULED;
     }
 
-    public Match(MatchId id, GroupId groupId, PlayerId homePlayer, PlayerId awayPlayer, MatchResult result, List<Set> sets) {
-        this.id = id;
-        this.groupId = groupId;
-        this.homePlayer = homePlayer;
-        this.awayPlayer = awayPlayer;
-        this.result = result;
-        this.sets = sets;
+    public PlayerId getWinner() {
+        if (status == MatchStatus.SCHEDULED) return null;
+
+        long player1sets = sets.stream().filter(Set::isPlayer1Winner).count();
+        long player2sets = sets.stream().filter(s -> !s.isPlayer1Winner()).count();
+
+        return player1sets > player2sets ? player1id : player2id;
     }
 
-    public MatchId getId() {
-        return id;
-    }
+    public void completeMatch(List<Set> completedSets) {
+        if (completedSets.size() > 3) {
+            throw new IllegalArgumentException("A match cannot have more than 3 sets");
+        }
 
-    public GroupId getGroupId() {
-        return groupId;
-    }
+        long player1sets = completedSets.stream().filter(Set::isPlayer1Winner).count();
+        long player2sets = completedSets.stream().filter(s -> !s.isPlayer1Winner()).count();
 
-    public PlayerId getHomePlayer() {
-        return homePlayer;
-    }
+        if(Math.max(player1sets, player2sets) != 2) {
+            throw new IllegalArgumentException("A match must be completed with a player winning 2 sets");
+        }
 
-    public PlayerId getAwayPlayer() {
-        return awayPlayer;
-    }
+        if (completedSets.size() == 3) {
+            boolean firstSetWinner = completedSets.get(0).isPlayer1Winner();
+            boolean secondSetWinner = completedSets.get(1).isPlayer1Winner();
 
-    public MatchResult getResult() {
-        return result;
-    }
+            if ((firstSetWinner && secondSetWinner) || (!firstSetWinner && !secondSetWinner)) {
+                throw new IllegalArgumentException("If a match is completed with 3 sets, the winner of the first two sets must be different");
+            }
+        }
 
-    public List<Set> getSets() {
-        return sets;
-    }
-
-    public void setResult(MatchResult result) {
-        this.result = result;
-    }
-
-    public void addSet(Set set) {
-        sets.add(set);
+        this.sets = completedSets;
+        this.status = MatchStatus.COMPLETED;
     }
 }
