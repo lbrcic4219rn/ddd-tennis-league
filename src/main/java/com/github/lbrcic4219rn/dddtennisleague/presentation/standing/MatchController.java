@@ -3,6 +3,8 @@ package com.github.lbrcic4219rn.dddtennisleague.presentation.standing;
 import com.github.lbrcic4219rn.dddtennisleague.application.standing.dto.MatchDto;
 import com.github.lbrcic4219rn.dddtennisleague.application.standing.MatchApplicationService;
 import com.github.lbrcic4219rn.dddtennisleague.application.standing.dto.SetDto;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.GroupId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.standing.id.MatchId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,9 +29,9 @@ public class MatchController {
     public ResponseEntity<String> createMatch(@RequestBody CreateMatchRequest request) {
         String matchId = matchService.createMatch(
                 request.groupId(),
-                request.homePlayerId(),
-                request.awayPlayerId()
-        );
+                request.player1Id(),
+                request.player2Id()
+        ).value().toString();
         return ResponseEntity.status(HttpStatus.CREATED).body(matchId);
     }
 
@@ -37,7 +40,7 @@ public class MatchController {
             @PathVariable String matchId,
             @RequestBody CompleteMatchRequest request) {
         matchService.completeMatch(
-                matchId,
+                new MatchId(UUID.fromString(matchId)),
                 request.sets()
         );
         return ResponseEntity.ok().build();
@@ -45,7 +48,7 @@ public class MatchController {
 
     @GetMapping("/{matchId}")
     public ResponseEntity<MatchDto> getMatch(@PathVariable String matchId) {
-        MatchDto match = matchService.getMatchById(matchId);
+        MatchDto match = matchService.getMatchById(new MatchId(UUID.fromString(matchId)));
         if (match == null) {
             return ResponseEntity.notFound().build();
         }
@@ -54,7 +57,7 @@ public class MatchController {
 
     @GetMapping("/group/{groupId}")
     public ResponseEntity<List<MatchDto>> getGroupMatches(@PathVariable String groupId) {
-        List<MatchDto> matches = matchService.getMatchesByGroup(groupId);
+        List<MatchDto> matches = matchService.getMatchesByGroup(new GroupId(UUID.fromString(groupId)));
         return ResponseEntity.ok(matches);
     }
 
@@ -66,14 +69,14 @@ public class MatchController {
 
     @DeleteMapping("/{matchId}")
     public ResponseEntity<Void> removeMatch(@PathVariable String matchId) {
-        matchService.removeMatch(matchId);
+        matchService.removeMatch(new MatchId(UUID.fromString(matchId)));
         return ResponseEntity.noContent().build();
     }
 
     public record CreateMatchRequest(
             String groupId,
-            String homePlayerId,
-            String awayPlayerId
+            String player1Id,
+            String player2Id
     ) {
     }
 

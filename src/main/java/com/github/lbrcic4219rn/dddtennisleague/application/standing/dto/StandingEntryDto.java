@@ -6,8 +6,7 @@ public record StandingEntryDto(
         double points,
         int wins,
         int losses,
-        int setsWon,
-        int setsLost
+        int setsWon
 ) {
 }
 

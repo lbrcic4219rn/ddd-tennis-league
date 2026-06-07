@@ -11,10 +11,10 @@ import java.util.UUID;
 
 @Getter
 public class Match {
-    private MatchId id;
-    private GroupId groupId;
-    private PlayerId player1id;
-    private PlayerId player2id;
+    private final MatchId id;
+    private final GroupId groupId;
+    private final PlayerId player1id;
+    private final PlayerId player2id;
     private List<Set> sets;
     private MatchStatus status;
 
@@ -34,6 +34,19 @@ public class Match {
         long player2sets = sets.stream().filter(s -> !s.isPlayer1Winner()).count();
 
         return player1sets > player2sets ? player1id : player2id;
+    }
+
+    public PlayerId getLoser() {
+        if (status == MatchStatus.SCHEDULED) return null;
+        return getWinner().equals(player1id) ? player2id : player1id;
+    }
+
+    public int getLoserSetsWon() {
+        if (status == MatchStatus.SCHEDULED) throw new IllegalStateException("Cannot determine loser sets won for a match that is not completed");
+        long player1sets = sets.stream().filter(Set::isPlayer1Winner).count();
+        long player2sets = sets.stream().filter(s -> !s.isPlayer1Winner()).count();
+
+        return (int) Math.min(player1sets, player2sets);
     }
 
     public void completeMatch(List<Set> completedSets) {

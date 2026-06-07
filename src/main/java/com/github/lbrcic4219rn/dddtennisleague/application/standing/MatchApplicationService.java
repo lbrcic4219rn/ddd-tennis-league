@@ -25,7 +25,7 @@ public class MatchApplicationService {
     private final MembershipRepo membershipRepo;
     private final StandingsApplicationService standingsService;
 
-    public String createMatch(String groupId, String player1Id, String player2Id) {
+    public MatchId createMatch(String groupId, String player1Id, String player2Id) {
         GroupId groupIdObj = new GroupId(UUID.fromString(groupId));
         PlayerId homePlayerIdObj = new PlayerId(UUID.fromString(player1Id));
         PlayerId awayPlayerIdObj = new PlayerId(UUID.fromString(player2Id));
@@ -42,13 +42,12 @@ public class MatchApplicationService {
         Match match = new Match(groupIdObj, homePlayerIdObj, awayPlayerIdObj);
         matchRepo.save(match);
 
-        return match.getId().value().toString();
+        return match.getId();
     }
 
-    public void completeMatch(String matchId, List<SetDto> completedSets) {
-        MatchId matchIdObj = new MatchId(UUID.fromString(matchId));
+    public void completeMatch(MatchId matchId, List<SetDto> completedSets) {
 
-        Optional<Match> match = matchRepo.findById(matchIdObj);
+        Optional<Match> match = matchRepo.findById(matchId);
         if (match.isEmpty()) {
             throw new IllegalArgumentException("Match not found: " + matchId);
         }
@@ -63,19 +62,16 @@ public class MatchApplicationService {
         Match matchObj = match.get();
         matchObj.completeMatch(sets);
         matchRepo.save(matchObj);
-
         standingsService.updateStandingsForMatch(matchObj);
     }
 
-    public MatchDto getMatchById(String matchId) {
-        MatchId matchIdObj = new MatchId(UUID.fromString(matchId));
-        Optional<Match> match = matchRepo.findById(matchIdObj);
+    public MatchDto getMatchById(MatchId matchId) {
+        Optional<Match> match = matchRepo.findById(matchId);
         return match.map(this::convertToDto).orElse(null);
     }
 
-    public List<MatchDto> getMatchesByGroup(String groupId) {
-        GroupId groupIdObj = new GroupId(UUID.fromString(groupId));
-        return matchRepo.findByGroupId(groupIdObj)
+    public List<MatchDto> getMatchesByGroup(GroupId groupId) {
+        return matchRepo.findByGroupId(groupId)
                 .stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
@@ -88,22 +84,17 @@ public class MatchApplicationService {
                 .collect(Collectors.toList());
     }
 
-    public void removeMatch(String matchId) {
-        MatchId matchIdObj = new MatchId(UUID.fromString(matchId));
-        matchRepo.remove(matchIdObj);
+    public void removeMatch(MatchId matchId) {
+        matchRepo.remove(matchId);
     }
 
     private MatchDto convertToDto(Match match) {
-        PlayerId winner = match.getWinner();
-        PlayerId loserId = match.getPlayer1id().equals(winner) ? match.getPlayer2id() : match.getPlayer1id();
-
         return new MatchDto(
                 match.getId().value().toString(),
                 match.getGroupId().value().toString(),
                 match.getPlayer1id().value().toString(),
                 match.getPlayer2id().value().toString(),
-                winner.value().toString(),
-                loserId.value().toString()
+                match.getWinner().value() != null ? match.getWinner().value().toString() : ""
         );
     }
 }

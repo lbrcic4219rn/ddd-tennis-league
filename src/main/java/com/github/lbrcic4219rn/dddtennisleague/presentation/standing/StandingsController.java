@@ -2,6 +2,8 @@ package com.github.lbrcic4219rn.dddtennisleague.presentation.standing;
 
 import com.github.lbrcic4219rn.dddtennisleague.application.standing.dto.LeaderboardDto;
 import com.github.lbrcic4219rn.dddtennisleague.application.standing.StandingsApplicationService;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.GroupId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.standing.id.LeaderboardId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,7 +32,7 @@ public class StandingsController {
 
     @GetMapping("/{leaderboardId}")
     public ResponseEntity<LeaderboardDto> getLeaderboard(@PathVariable String leaderboardId) {
-        LeaderboardDto leaderboard = standingsService.getLeaderboard(leaderboardId);
+        LeaderboardDto leaderboard = standingsService.getLeaderboard(new LeaderboardId(UUID.fromString(leaderboardId)));
         if (leaderboard == null) {
             return ResponseEntity.notFound().build();
         }
@@ -38,7 +41,7 @@ public class StandingsController {
 
     @GetMapping("/group/{groupId}")
     public ResponseEntity<LeaderboardDto> getLeaderboardByGroup(@PathVariable String groupId) {
-        LeaderboardDto leaderboard = standingsService.getLeaderboardByGroup(groupId);
+        LeaderboardDto leaderboard = standingsService.getLeaderboardByGroup(new GroupId(UUID.fromString(groupId)));
         if (leaderboard == null) {
             return ResponseEntity.notFound().build();
         }
@@ -53,7 +56,7 @@ public class StandingsController {
 
     @DeleteMapping("/{leaderboardId}")
     public ResponseEntity<Void> removeLeaderboard(@PathVariable String leaderboardId) {
-        standingsService.removeLeaderboard(leaderboardId);
+        standingsService.removeLeaderboard(new LeaderboardId(UUID.fromString(leaderboardId)));
         return ResponseEntity.noContent().build();
     }
 

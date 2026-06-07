@@ -7,8 +7,7 @@ public record StandingEntry(
         double points,
         int wins,
         int losses,
-        int setsWon,
-        int setsLost
+        int setsWon
 ) {
     public StandingEntry {
         if (points < 0) {
@@ -22,9 +21,6 @@ public record StandingEntry(
         }
         if (setsWon < 0) {
             throw new IllegalArgumentException("Sets won cannot be negative");
-        }
-        if (setsLost < 0) {
-            throw new IllegalArgumentException("Sets lost cannot be negative");
         }
     }
 }

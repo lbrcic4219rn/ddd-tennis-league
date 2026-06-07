@@ -9,6 +9,8 @@ import com.github.lbrcic4219rn.dddtennisleague.application.standing.dto.SetDto;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.LeagueId;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.SkillLevel;
 import com.github.lbrcic4219rn.dddtennisleague.domain.player.id.PlayerId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.standing.id.MatchId;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -41,7 +43,7 @@ public class DataBootstrapper implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) {
+    public void run(String @NonNull ... args) {
         bootstrapPlayers();
     }
 
@@ -142,10 +144,10 @@ public class DataBootstrapper implements CommandLineRunner {
     }
 
     private void bootstrapAdvancedGroupMatches(String groupId, String player1Id, String player2Id, String player3Id) {
-        List<String> matchIds = new ArrayList<>();
+        List<MatchId> matchIds = new ArrayList<>();
 
         // Match 1: Player1 vs Player2 (Player1 wins)
-        String match1Id = matchService.createMatch(groupId, player1Id, player2Id);
+        MatchId match1Id = matchService.createMatch(groupId, player1Id, player2Id);
         matchService.completeMatch(match1Id, List.of(
                 new SetDto(6, 4, null),
                 new SetDto(6, 3, null)
@@ -153,7 +155,7 @@ public class DataBootstrapper implements CommandLineRunner {
         matchIds.add(match1Id);
 
         // Match 2: Player2 vs Player3 (Player3 wins)
-        String match2Id = matchService.createMatch(groupId, player2Id, player3Id);
+        MatchId match2Id = matchService.createMatch(groupId, player2Id, player3Id);
         matchService.completeMatch(match2Id, List.of(
                 new SetDto(4, 6, null),
                 new SetDto(3, 6, null)
@@ -161,7 +163,7 @@ public class DataBootstrapper implements CommandLineRunner {
         matchIds.add(match2Id);
 
         // Match 3: Player1 vs Player3 (Player1 wins)
-        String match3Id = matchService.createMatch(groupId, player1Id, player3Id);
+        MatchId match3Id = matchService.createMatch(groupId, player1Id, player3Id);
         matchService.completeMatch(match3Id, List.of(
                 new SetDto(6, 4, null),
                 new SetDto(6, 3, null)
@@ -172,10 +174,10 @@ public class DataBootstrapper implements CommandLineRunner {
     }
 
     private void bootstrapIntermediateGroupMatches(String groupId, String player1Id, String player2Id) {
-        List<String> matchIds = new ArrayList<>();
+        List<MatchId> matchIds = new ArrayList<>();
 
         // Match 1: Player1 vs Player2 (Player1 wins)
-        String match1Id = matchService.createMatch(groupId, player1Id, player2Id);
+        MatchId match1Id = matchService.createMatch(groupId, player1Id, player2Id);
         matchService.completeMatch(match1Id, List.of(
                 new SetDto(6, 4, null),
                 new SetDto(6, 3, null)

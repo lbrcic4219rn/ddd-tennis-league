@@ -5,7 +5,6 @@ public record MatchDto(
         String groupId,
         String player1Id,
         String player2Id,
-        String winnerId,
-        String loserId
+        String winnerId
 ) { }
 

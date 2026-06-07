@@ -29,16 +29,6 @@ public class MembershipController {
         return ResponseEntity.status(HttpStatus.CREATED).body(membershipId);
     }
 
-    @PostMapping("/leave/{membershipId}")
-    public ResponseEntity<Void> leaveGroup(@PathVariable String membershipId) {
-        try {
-            membershipService.leaveGroup(membershipId);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.noContent().build();
-    }
-
     @GetMapping("/{membershipId}")
     public ResponseEntity<MembershipDto> getMembership(@PathVariable String membershipId) {
         MembershipDto membership = membershipService.getMembershipById(membershipId);

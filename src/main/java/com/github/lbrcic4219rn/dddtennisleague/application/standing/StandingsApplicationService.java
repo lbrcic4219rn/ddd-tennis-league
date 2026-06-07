@@ -2,9 +2,7 @@ package com.github.lbrcic4219rn.dddtennisleague.application.standing;
 
 import com.github.lbrcic4219rn.dddtennisleague.application.standing.dto.LeaderboardDto;
 import com.github.lbrcic4219rn.dddtennisleague.application.standing.dto.StandingEntryDto;
-import com.github.lbrcic4219rn.dddtennisleague.domain.league.Membership;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.GroupId;
-import com.github.lbrcic4219rn.dddtennisleague.domain.league.repo.MembershipRepo;
 import com.github.lbrcic4219rn.dddtennisleague.domain.player.id.PlayerId;
 import com.github.lbrcic4219rn.dddtennisleague.domain.standing.Leaderboard;
 import com.github.lbrcic4219rn.dddtennisleague.domain.standing.id.LeaderboardId;
@@ -15,12 +13,7 @@ import com.github.lbrcic4219rn.dddtennisleague.domain.standing.StandingEntry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -29,8 +22,6 @@ import java.util.stream.IntStream;
 public class StandingsApplicationService {
     private final LeaderboardRepo leaderboardRepo;
     private final MatchRepo matchRepo;
-    private final MembershipRepo membershipRepo;
-
 
     public String createLeaderboard(String groupId) {
         GroupId groupIdObj = new GroupId(UUID.fromString(groupId));
@@ -51,29 +42,24 @@ public class StandingsApplicationService {
 
         Optional<Leaderboard> leaderboardOpt = leaderboardRepo.findByGroupId(groupId);
         if (leaderboardOpt.isEmpty()) {
-            // Create leaderboard if it doesn't exist
             Leaderboard leaderboard = new Leaderboard(groupId);
             leaderboardRepo.save(leaderboard);
             leaderboardOpt = Optional.of(leaderboard);
         }
 
         Leaderboard leaderboard = leaderboardOpt.get();
-
-        // Recalculate standings (invariant: MatchCompleted event recalculates standings)
         List<StandingEntry> updatedEntries = recalculateStandings(groupId);
         leaderboard.setEntries(updatedEntries);
         leaderboardRepo.save(leaderboard);
     }
 
-    public LeaderboardDto getLeaderboard(String leaderboardId) {
-        LeaderboardId leaderboardIdObj = new LeaderboardId(UUID.fromString(leaderboardId));
-        Optional<Leaderboard> leaderboard = leaderboardRepo.findById(leaderboardIdObj);
+    public LeaderboardDto getLeaderboard(LeaderboardId leaderboardId) {
+        Optional<Leaderboard> leaderboard = leaderboardRepo.findById(leaderboardId);
         return leaderboard.map(this::convertToDto).orElse(null);
     }
 
-    public LeaderboardDto getLeaderboardByGroup(String groupId) {
-        GroupId groupIdObj = new GroupId(UUID.fromString(groupId));
-        Optional<Leaderboard> leaderboard = leaderboardRepo.findByGroupId(groupIdObj);
+    public LeaderboardDto getLeaderboardByGroup(GroupId groupId) {
+        Optional<Leaderboard> leaderboard = leaderboardRepo.findByGroupId(groupId);
         return leaderboard.map(this::convertToDto).orElse(null);
     }
 
@@ -84,13 +70,66 @@ public class StandingsApplicationService {
                 .collect(Collectors.toList());
     }
 
-    public void removeLeaderboard(String leaderboardId) {
-        LeaderboardId leaderboardIdObj = new LeaderboardId(UUID.fromString(leaderboardId));
-        leaderboardRepo.remove(leaderboardIdObj);
+    public void removeLeaderboard(LeaderboardId leaderboardId) {
+        leaderboardRepo.remove(leaderboardId);
     }
 
+
     private List<StandingEntry> recalculateStandings(GroupId groupId) {
-        return null;
+        List<Match> matches = matchRepo.findByGroupId(groupId);
+        Map<PlayerId, Double>  points = new HashMap<>();
+        Map<PlayerId, Integer> wins = new HashMap<>();
+        Map<PlayerId, Integer> losses = new HashMap<>();
+        Map<PlayerId, Integer> setsWon = new HashMap<>();
+
+        for (Match match : matches) {
+            PlayerId winner = match.getWinner();
+            PlayerId loser  = match.getLoser();
+
+            points.putIfAbsent(winner, 0.0);
+            points.putIfAbsent(loser, 0.0);
+            wins.putIfAbsent(winner, 0);
+            wins.putIfAbsent(loser, 0);
+            losses.putIfAbsent(winner, 0);
+            losses.putIfAbsent(loser, 0);
+            setsWon.putIfAbsent(winner, 0);
+            setsWon.putIfAbsent(loser, 0);
+
+            points.merge(winner,1.0, Double::sum);
+            points.merge(loser,0.5, Double::sum);
+            wins.merge(winner,1,Integer::sum);
+            losses.merge(loser,1,Integer::sum);
+
+            setsWon .merge(winner, 2, Integer::sum);
+            setsWon .merge(loser,  match.getLoserSetsWon(),  Integer::sum);
+        }
+
+        Map<PlayerId, Map<PlayerId, Long>> h2h = buildH2HIndex(matches);
+
+        return points.keySet().stream()
+                .sorted(Comparator
+                        .<PlayerId, Double>comparing(points::get).reversed()
+                        .thenComparingInt(setsWon::get).reversed()
+                        .thenComparingLong(p -> h2h.getOrDefault(p, Map.of())
+                                .values().stream().mapToLong(Long::longValue).sum()).reversed()
+                )
+                .map(p -> new StandingEntry(
+                        p,
+                        points.get(p),
+                        wins  .get(p),
+                        losses.get(p),
+                        setsWon.get(p)
+                ))
+                .toList();
+    }
+
+    private Map<PlayerId, Map<PlayerId, Long>> buildH2HIndex(List<Match> matches) {
+        Map<PlayerId, Map<PlayerId, Long>> index = new HashMap<>();
+        for (Match match : matches) {
+            index.computeIfAbsent(match.getWinner(), k -> new HashMap<>())
+                    .merge(match.getLoser(), 1L, Long::sum);
+        }
+        return index;
     }
 
     private LeaderboardDto convertToDto(Leaderboard leaderboard) {
@@ -104,8 +143,7 @@ public class StandingsApplicationService {
                             entry.points(),
                             entry.wins(),
                             entry.losses(),
-                            entry.setsWon(),
-                            entry.setsLost()
+                            entry.setsWon()
                     );
                 }).toList();
 

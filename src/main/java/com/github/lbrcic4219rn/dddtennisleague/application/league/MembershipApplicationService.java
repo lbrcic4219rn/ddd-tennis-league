@@ -29,7 +29,6 @@ public class MembershipApplicationService {
         PlayerId playerIdObj = new PlayerId(UUID.fromString(playerId));
         GroupId groupIdObj = new GroupId(UUID.fromString(groupId));
 
-        // Check for existing membership (invariant: exactly 1 group per player per league)
         League league = leagueRepo.findByGroupId(groupIdObj).orElseThrow(
                 () -> new IllegalArgumentException("Group not part of any league: " + groupId));
 
@@ -56,24 +55,6 @@ public class MembershipApplicationService {
         groupRepo.save(group.get());
 
         return membership.getId().value().toString();
-    }
-
-    public void leaveGroup(String membershipId) throws IllegalArgumentException {
-        MembershipId membershipIdObj = new MembershipId(UUID.fromString(membershipId));
-        Optional<Membership> membership = membershipRepo.findById(membershipIdObj);
-
-        if (membership.isEmpty()) {
-            throw new IllegalArgumentException("Membership not found: " + membershipId);
-        }
-
-        GroupId groupId = membership.get().getGroupId();
-        Optional<Group> group = groupRepo.findById(groupId);
-        if (group.isPresent()) {
-            group.get().removeMembership(membership.get());
-            groupRepo.save(group.get());
-        }
-
-        membershipRepo.remove(membershipIdObj);
     }
 
     public MembershipDto getMembershipById(String membershipId) {
