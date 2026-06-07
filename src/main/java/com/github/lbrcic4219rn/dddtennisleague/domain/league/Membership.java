@@ -15,27 +15,10 @@ public class Membership {
     private final PlayerId playerId;
     private final Instant joinedAt;
 
-    private MembershipStatus status;
-
-    public Membership(GroupId groupId, PlayerId playerId, MembershipStatus status) {
+    public Membership(GroupId groupId, PlayerId playerId) {
         this.id = new MembershipId(UUID.randomUUID());
         this.groupId = groupId;
         this.playerId = playerId;
         this.joinedAt = Instant.now();
-        this.status = status;
-    }
-
-    public void activateMembership() {
-        if (status.equals(MembershipStatus.ACTIVE)) {
-            throw new IllegalStateException("Membership is already active.");
-        }
-        this.status = MembershipStatus.ACTIVE;
-    }
-
-    public void deactivateMembership() {
-        if (status.equals(MembershipStatus.INACTIVE)) {
-            throw new IllegalStateException("Membership is already inactive.");
-        }
-        this.status = MembershipStatus.INACTIVE;
     }
 }

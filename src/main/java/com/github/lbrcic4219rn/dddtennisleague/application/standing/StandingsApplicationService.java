@@ -12,6 +12,7 @@ import com.github.lbrcic4219rn.dddtennisleague.domain.standing.repo.LeaderboardR
 import com.github.lbrcic4219rn.dddtennisleague.domain.standing.Match;
 import com.github.lbrcic4219rn.dddtennisleague.domain.standing.repo.MatchRepo;
 import com.github.lbrcic4219rn.dddtennisleague.domain.standing.StandingEntry;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -24,16 +25,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
+@RequiredArgsConstructor
 public class StandingsApplicationService {
     private final LeaderboardRepo leaderboardRepo;
     private final MatchRepo matchRepo;
     private final MembershipRepo membershipRepo;
 
-    public StandingsApplicationService(LeaderboardRepo leaderboardRepo, MatchRepo matchRepo, MembershipRepo membershipRepo) {
-        this.leaderboardRepo = leaderboardRepo;
-        this.matchRepo = matchRepo;
-        this.membershipRepo = membershipRepo;
-    }
 
     public String createLeaderboard(String groupId) {
         GroupId groupIdObj = new GroupId(UUID.fromString(groupId));

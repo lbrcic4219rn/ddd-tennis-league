@@ -5,6 +5,7 @@ import com.github.lbrcic4219rn.dddtennisleague.domain.player.ContactInformation;
 import com.github.lbrcic4219rn.dddtennisleague.domain.player.Player;
 import com.github.lbrcic4219rn.dddtennisleague.domain.player.id.PlayerId;
 import com.github.lbrcic4219rn.dddtennisleague.domain.player.repo.PlayerRepo;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -13,12 +14,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class PlayerApplicationService {
     private final PlayerRepo playerRepo;
-
-    public PlayerApplicationService(PlayerRepo playerRepo) {
-        this.playerRepo = playerRepo;
-    }
 
     public PlayerId registerPlayer(String firstName, String lastName, String email, String phoneNumber, LocalDate dateOfBirth) {
         ContactInformation contactInfo = new ContactInformation(email, phoneNumber);
@@ -40,7 +38,8 @@ public class PlayerApplicationService {
                 .collect(Collectors.toList());
     }
 
-    public void removePlayer(PlayerId playerId) {
+    public void removePlayer(PlayerId playerId) throws IllegalArgumentException {
+        playerRepo.findById(playerId).orElseThrow(IllegalArgumentException::new);
         playerRepo.remove(playerId);
     }
 

@@ -6,8 +6,7 @@ public record MembershipDto(
         String id,
         String groupId,
         String playerId,
-        Instant joinedAt,
-        String status
+        Instant joinedAt
 ) {
 }
 

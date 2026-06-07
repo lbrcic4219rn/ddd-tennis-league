@@ -55,7 +55,11 @@ public class LeagueController {
 
     @DeleteMapping("/{leagueId}")
     public ResponseEntity<Void> removeLeague(@PathVariable String leagueId) {
-        leagueService.removeLeague(new LeagueId(UUID.fromString(leagueId)));
+        try {
+            leagueService.removeLeague(new LeagueId(UUID.fromString(leagueId)));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.noContent().build();
     }
 
@@ -70,8 +74,8 @@ public class LeagueController {
         return ResponseEntity.status(HttpStatus.CREATED).body(groupId);
     }
 
-    @GetMapping("/{leagueId}/groups/{groupId}")
-    public ResponseEntity<GroupDto> getGroup(@PathVariable String leagueId, @PathVariable String groupId) {
+    @GetMapping("/groups/{groupId}")
+    public ResponseEntity<GroupDto> getGroup(@PathVariable String groupId) {
         GroupDto group = leagueService.getGroupById(new GroupId(UUID.fromString(groupId)));
         if (group == null) {
             return ResponseEntity.notFound().build();
@@ -79,9 +83,13 @@ public class LeagueController {
         return ResponseEntity.ok(group);
     }
 
-    @DeleteMapping("/{leagueId}/groups/{groupId}")
-    public ResponseEntity<Void> removeGroup(@PathVariable String leagueId, @PathVariable String groupId) {
-        leagueService.removeGroup(new GroupId(UUID.fromString(groupId)));
+    @DeleteMapping("/groups/{groupId}")
+    public ResponseEntity<Void> removeGroup(@PathVariable String groupId) {
+        try {
+            leagueService.removeGroup(new GroupId(UUID.fromString(groupId)));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.noContent().build();
     }
 

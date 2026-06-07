@@ -11,9 +11,4 @@ public record Season(
             throw new IllegalArgumentException("Start date must be before end date");
         }
     }
-
-    public boolean isActive() {
-        Instant now = Instant.now();
-        return now.isAfter(startDate) && now.isBefore(endDate);
-    }
 }

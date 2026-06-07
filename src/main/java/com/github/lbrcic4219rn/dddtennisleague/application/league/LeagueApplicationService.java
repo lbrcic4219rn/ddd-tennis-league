@@ -4,12 +4,13 @@ import com.github.lbrcic4219rn.dddtennisleague.application.league.dto.GroupDto;
 import com.github.lbrcic4219rn.dddtennisleague.application.league.dto.LeagueDto;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.Group;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.GroupId;
-import com.github.lbrcic4219rn.dddtennisleague.domain.league.repo.GroupRepo;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.League;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.LeagueId;
-import com.github.lbrcic4219rn.dddtennisleague.domain.league.repo.LeagueRepo;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.Season;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.SkillLevel;
+import com.github.lbrcic4219rn.dddtennisleague.infrastructure.persistence.GroupRepoInMemory;
+import com.github.lbrcic4219rn.dddtennisleague.infrastructure.persistence.LeagueRepoInMemory;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -19,14 +20,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class LeagueApplicationService {
-    private final LeagueRepo leagueRepo;
-    private final GroupRepo groupRepo;
-
-    public LeagueApplicationService(LeagueRepo leagueRepo, GroupRepo groupRepo) {
-        this.leagueRepo = leagueRepo;
-        this.groupRepo = groupRepo;
-    }
+    private final LeagueRepoInMemory leagueRepo;
+    private final GroupRepoInMemory groupRepo;
 
     public LeagueId createLeague(String name, Instant startDate, Instant endDate) {
         Season season = new Season(startDate, endDate);
@@ -96,11 +93,15 @@ public class LeagueApplicationService {
                 .collect(Collectors.toList());
     }
 
-    public void removeLeague(LeagueId leagueId) {
+    public void removeLeague(LeagueId leagueId) throws IllegalArgumentException {
+        leagueRepo.findById(leagueId).orElseThrow(IllegalArgumentException::new);
+        groupRepo.removeGroupsByLeagueId(leagueId);
         leagueRepo.remove(leagueId);
     }
 
-    public void removeGroup(GroupId groupId) {
+    public void removeGroup(GroupId groupId) throws IllegalArgumentException {
+        groupRepo.findById(groupId).orElseThrow(IllegalArgumentException::new);
+        leagueRepo.removeGroup(groupId);
         groupRepo.remove(groupId);
     }
 

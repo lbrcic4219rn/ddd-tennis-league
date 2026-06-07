@@ -1,6 +1,5 @@
 package com.github.lbrcic4219rn.dddtennisleague.domain.league;
 
-import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.GroupId;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.LeagueId;
 import lombok.Getter;
 

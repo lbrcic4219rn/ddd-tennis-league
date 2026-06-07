@@ -2,6 +2,7 @@ package com.github.lbrcic4219rn.dddtennisleague.presentation.league;
 
 import com.github.lbrcic4219rn.dddtennisleague.application.league.MembershipApplicationService;
 import com.github.lbrcic4219rn.dddtennisleague.application.league.dto.MembershipDto;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.MembershipId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,7 +31,11 @@ public class MembershipController {
 
     @PostMapping("/leave/{membershipId}")
     public ResponseEntity<Void> leaveGroup(@PathVariable String membershipId) {
-        membershipService.leaveGroup(membershipId);
+        try {
+            membershipService.leaveGroup(membershipId);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.noContent().build();
     }
 
@@ -56,7 +62,11 @@ public class MembershipController {
 
     @DeleteMapping("/{membershipId}")
     public ResponseEntity<Void> removeMembership(@PathVariable String membershipId) {
-        membershipService.removeMembership(membershipId);
+        try {
+            membershipService.removeMembership(new MembershipId(UUID.fromString(membershipId)));
+        } catch (IllegalAccessException e) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.noContent().build();
     }
 

@@ -2,13 +2,15 @@ package com.github.lbrcic4219rn.dddtennisleague.application.league;
 
 import com.github.lbrcic4219rn.dddtennisleague.application.league.dto.MembershipDto;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.Group;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.League;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.GroupId;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.repo.GroupRepo;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.Membership;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.MembershipId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.repo.LeagueRepo;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.repo.MembershipRepo;
-import com.github.lbrcic4219rn.dddtennisleague.domain.league.MembershipStatus;
 import com.github.lbrcic4219rn.dddtennisleague.domain.player.id.PlayerId;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,20 +19,27 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class MembershipApplicationService {
     private final MembershipRepo membershipRepo;
     private final GroupRepo groupRepo;
-
-    public MembershipApplicationService(MembershipRepo membershipRepo, GroupRepo groupRepo) {
-        this.membershipRepo = membershipRepo;
-        this.groupRepo = groupRepo;
-    }
+    private final LeagueRepo leagueRepo;
 
     public String joinGroup(String playerId, String groupId) {
         PlayerId playerIdObj = new PlayerId(UUID.fromString(playerId));
         GroupId groupIdObj = new GroupId(UUID.fromString(groupId));
 
         // Check for existing membership (invariant: exactly 1 group per player per league)
+        League league = leagueRepo.findByGroupId(groupIdObj).orElseThrow(
+                () -> new IllegalArgumentException("Group not part of any league: " + groupId));
+
+        List<Group> leagueGroups = league.getGroups();
+        for (Group group : leagueGroups) {
+            Optional<Membership> existing = membershipRepo.findByGroupIdAndPlayerId(group.getId(), playerIdObj);
+            if (existing.isPresent()) {
+                throw new IllegalArgumentException("Player already member of group in league: " + league.getLeagueId());
+            }
+        }
         Optional<Membership> existingMembership = membershipRepo.findByGroupIdAndPlayerId(groupIdObj, playerIdObj);
         if (existingMembership.isPresent()) {
             throw new IllegalArgumentException("Player already member of this group");
@@ -41,7 +50,7 @@ public class MembershipApplicationService {
             throw new IllegalArgumentException("Group not found: " + groupId);
         }
 
-        Membership membership = new Membership(groupIdObj, playerIdObj, MembershipStatus.ACTIVE);
+        Membership membership = new Membership(groupIdObj, playerIdObj);
         membershipRepo.save(membership);
         group.get().addMembership(membership);
         groupRepo.save(group.get());
@@ -49,7 +58,7 @@ public class MembershipApplicationService {
         return membership.getId().value().toString();
     }
 
-    public void leaveGroup(String membershipId) {
+    public void leaveGroup(String membershipId) throws IllegalArgumentException {
         MembershipId membershipIdObj = new MembershipId(UUID.fromString(membershipId));
         Optional<Membership> membership = membershipRepo.findById(membershipIdObj);
 
@@ -89,9 +98,9 @@ public class MembershipApplicationService {
                 .collect(Collectors.toList());
     }
 
-    public void removeMembership(String membershipId) {
-        MembershipId membershipIdObj = new MembershipId(UUID.fromString(membershipId));
-        membershipRepo.remove(membershipIdObj);
+    public void removeMembership(MembershipId membershipId) throws IllegalAccessException {
+        membershipRepo.findById(membershipId).orElseThrow(IllegalAccessException::new);
+        membershipRepo.remove(membershipId);
     }
 
     private MembershipDto convertToDto(Membership membership) {
@@ -99,8 +108,7 @@ public class MembershipApplicationService {
                 membership.getId().value().toString(),
                 membership.getGroupId().value().toString(),
                 membership.getPlayerId().value().toString(),
-                membership.getJoinedAt(),
-                membership.getStatus().toString()
+                membership.getJoinedAt()
         );
     }
 }

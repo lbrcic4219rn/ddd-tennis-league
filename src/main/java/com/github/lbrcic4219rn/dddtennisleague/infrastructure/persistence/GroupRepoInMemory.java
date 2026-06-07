@@ -42,5 +42,13 @@ public class GroupRepoInMemory implements GroupRepo {
     public Map<GroupId, Group> findAll() {
         return new HashMap<>(groups);
     }
+
+    public void removeGroupsByLeagueId(LeagueId leagueId) {
+        groups.forEach((groupId, group) -> {
+            if (group.getLeagueId().equals(leagueId)) {
+                groups.remove(groupId);
+            }
+        });
+    }
 }
 

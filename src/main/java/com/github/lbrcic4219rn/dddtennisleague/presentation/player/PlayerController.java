@@ -52,7 +52,11 @@ public class PlayerController {
 
     @DeleteMapping("/{playerId}")
     public ResponseEntity<Void> removePlayer(@PathVariable String playerId) {
-        playerService.removePlayer(new PlayerId(UUID.fromString(playerId)));
+        try {
+            playerService.removePlayer(new PlayerId(UUID.fromString(playerId)));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.noContent().build();
     }
 
