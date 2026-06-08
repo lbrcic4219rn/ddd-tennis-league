@@ -6,6 +6,7 @@ import com.github.lbrcic4219rn.dddtennisleague.application.league.MembershipAppl
 import com.github.lbrcic4219rn.dddtennisleague.application.player.PlayerApplicationService;
 import com.github.lbrcic4219rn.dddtennisleague.application.standing.StandingsApplicationService;
 import com.github.lbrcic4219rn.dddtennisleague.application.standing.dto.SetDto;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.GroupId;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.LeagueId;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.SkillLevel;
 import com.github.lbrcic4219rn.dddtennisleague.domain.player.id.PlayerId;
@@ -110,17 +111,17 @@ public class DataBootstrapper implements CommandLineRunner {
             );
 
             // Create groups for different skill levels
-            String beginnerGroupId = leagueService.createGroup(leagueId, SkillLevel.BEGINNER).value().toString();
-            String intermediateGroupId = leagueService.createGroup(leagueId, SkillLevel.INTERMEDIATE).value().toString();
-            String advancedGroupId = leagueService.createGroup(leagueId, SkillLevel.ADVANCED).value().toString();
+            GroupId beginnerGroupId = leagueService.createGroup(leagueId, SkillLevel.BEGINNER);
+            GroupId intermediateGroupId = leagueService.createGroup(leagueId, SkillLevel.INTERMEDIATE);
+            GroupId advancedGroupId = leagueService.createGroup(leagueId, SkillLevel.ADVANCED);
 
             // Add players to groups (Invariant: one group per player per league)
-            membershipService.joinGroup(player1.value().toString(), advancedGroupId);
-            membershipService.joinGroup(player2.value().toString(), advancedGroupId);
-            membershipService.joinGroup(player3.value().toString(), advancedGroupId);
-            membershipService.joinGroup(player4.value().toString(), intermediateGroupId);
-            membershipService.joinGroup(player5.value().toString(), intermediateGroupId);
-            membershipService.joinGroup(player6.value().toString(), beginnerGroupId);
+            membershipService.joinGroup(player1, advancedGroupId);
+            membershipService.joinGroup(player2, advancedGroupId);
+            membershipService.joinGroup(player3, advancedGroupId);
+            membershipService.joinGroup(player4, intermediateGroupId);
+            membershipService.joinGroup(player5, intermediateGroupId);
+            membershipService.joinGroup(player6, beginnerGroupId);
 
             // Create leaderboards
             standingsService.createLeaderboard(advancedGroupId);
@@ -128,9 +129,8 @@ public class DataBootstrapper implements CommandLineRunner {
             standingsService.createLeaderboard(beginnerGroupId);
 
             // Create some matches
-            bootstrapAdvancedGroupMatches(advancedGroupId, player1.value().toString(), player2.value().toString(),
-                    player3.value().toString());
-            bootstrapIntermediateGroupMatches(intermediateGroupId, player4.value().toString(), player5.value().toString());
+            bootstrapAdvancedGroupMatches(advancedGroupId, player1, player2, player3);
+            bootstrapIntermediateGroupMatches(intermediateGroupId, player4, player5);
 
             System.out.println("✓ Bootstrap data populated successfully!");
             System.out.println("  - 6 players created");
@@ -143,7 +143,7 @@ public class DataBootstrapper implements CommandLineRunner {
         }
     }
 
-    private void bootstrapAdvancedGroupMatches(String groupId, String player1Id, String player2Id, String player3Id) {
+    private void bootstrapAdvancedGroupMatches(GroupId groupId, PlayerId player1Id, PlayerId player2Id, PlayerId player3Id) {
         List<MatchId> matchIds = new ArrayList<>();
 
         // Match 1: Player1 vs Player2 (Player1 wins)
@@ -173,7 +173,7 @@ public class DataBootstrapper implements CommandLineRunner {
         System.out.println("  - Advanced group: " + matchIds.size() + " matches created");
     }
 
-    private void bootstrapIntermediateGroupMatches(String groupId, String player1Id, String player2Id) {
+    private void bootstrapIntermediateGroupMatches(GroupId groupId, PlayerId player1Id, PlayerId player2Id) {
         List<MatchId> matchIds = new ArrayList<>();
 
         // Match 1: Player1 vs Player2 (Player1 wins)

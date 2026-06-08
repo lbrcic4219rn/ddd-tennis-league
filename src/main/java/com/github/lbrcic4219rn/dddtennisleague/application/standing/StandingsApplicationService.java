@@ -23,15 +23,13 @@ public class StandingsApplicationService {
     private final LeaderboardRepo leaderboardRepo;
     private final MatchRepo matchRepo;
 
-    public String createLeaderboard(String groupId) {
-        GroupId groupIdObj = new GroupId(UUID.fromString(groupId));
-
-        Optional<Leaderboard> existing = leaderboardRepo.findByGroupId(groupIdObj);
+    public String createLeaderboard(GroupId groupId) throws IllegalArgumentException {
+        Optional<Leaderboard> existing = leaderboardRepo.findByGroupId(groupId);
         if (existing.isPresent()) {
             throw new IllegalArgumentException("Leaderboard already exists for group: " + groupId);
         }
 
-        Leaderboard leaderboard = new Leaderboard(groupIdObj);
+        Leaderboard leaderboard = new Leaderboard(groupId);
         leaderboardRepo.save(leaderboard);
 
         return leaderboard.getId().value().toString();
@@ -54,19 +52,21 @@ public class StandingsApplicationService {
     }
 
     public LeaderboardDto getLeaderboard(LeaderboardId leaderboardId) {
-        Optional<Leaderboard> leaderboard = leaderboardRepo.findById(leaderboardId);
-        return leaderboard.map(this::convertToDto).orElse(null);
+        Leaderboard leaderboard = leaderboardRepo.findById(leaderboardId)
+                .orElseThrow(IllegalArgumentException::new);
+        return getLeaderboardDto(leaderboard);
     }
 
     public LeaderboardDto getLeaderboardByGroup(GroupId groupId) {
-        Optional<Leaderboard> leaderboard = leaderboardRepo.findByGroupId(groupId);
-        return leaderboard.map(this::convertToDto).orElse(null);
+        Leaderboard leaderboard = leaderboardRepo.findByGroupId(groupId)
+                .orElseThrow(IllegalArgumentException::new);
+        return getLeaderboardDto(leaderboard);
     }
 
     public List<LeaderboardDto> getAllLeaderboards() {
         return leaderboardRepo.findAll()
                 .stream()
-                .map(this::convertToDto)
+                .map(this::getLeaderboardDto)
                 .collect(Collectors.toList());
     }
 
@@ -131,7 +131,7 @@ public class StandingsApplicationService {
         return index;
     }
 
-    private LeaderboardDto convertToDto(Leaderboard leaderboard) {
+    private LeaderboardDto getLeaderboardDto(Leaderboard leaderboard) {
         List<StandingEntry> entries = leaderboard.getEntries();
         List<StandingEntryDto> entryDtos = IntStream.range(0, entries.size())
                 .mapToObj(i -> {

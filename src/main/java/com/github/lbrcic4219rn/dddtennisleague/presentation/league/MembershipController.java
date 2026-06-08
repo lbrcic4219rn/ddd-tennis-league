@@ -2,7 +2,9 @@ package com.github.lbrcic4219rn.dddtennisleague.presentation.league;
 
 import com.github.lbrcic4219rn.dddtennisleague.application.league.MembershipApplicationService;
 import com.github.lbrcic4219rn.dddtennisleague.application.league.dto.MembershipDto;
+import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.GroupId;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.MembershipId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.player.id.PlayerId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,13 +27,19 @@ public class MembershipController {
 
     @PostMapping("/join")
     public ResponseEntity<String> joinGroup(@RequestBody JoinGroupRequest request) {
-        String membershipId = membershipService.joinGroup(request.playerId(), request.groupId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(membershipId);
+        try {
+            String membershipId = membershipService.joinGroup(
+                    new PlayerId(UUID.fromString(request.playerId())),
+                    new GroupId(UUID.fromString(request.groupId())));
+            return ResponseEntity.status(HttpStatus.CREATED).body(membershipId);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/{membershipId}")
     public ResponseEntity<MembershipDto> getMembership(@PathVariable String membershipId) {
-        MembershipDto membership = membershipService.getMembershipById(membershipId);
+        MembershipDto membership = membershipService.getMembershipById(new MembershipId(UUID.fromString(membershipId)));
         if (membership == null) {
             return ResponseEntity.notFound().build();
         }
@@ -40,13 +48,13 @@ public class MembershipController {
 
     @GetMapping("/group/{groupId}")
     public ResponseEntity<List<MembershipDto>> getGroupMembers(@PathVariable String groupId) {
-        List<MembershipDto> members = membershipService.getMembersOfGroup(groupId);
+        List<MembershipDto> members = membershipService.getMembersOfGroup(new GroupId(UUID.fromString(groupId)));
         return ResponseEntity.ok(members);
     }
 
     @GetMapping("/player/{playerId}")
     public ResponseEntity<List<MembershipDto>> getPlayerMemberships(@PathVariable String playerId) {
-        List<MembershipDto> memberships = membershipService.getPlayerMemberships(playerId);
+        List<MembershipDto> memberships = membershipService.getPlayerMemberships(new PlayerId(UUID.fromString(playerId)));
         return ResponseEntity.ok(memberships);
     }
 

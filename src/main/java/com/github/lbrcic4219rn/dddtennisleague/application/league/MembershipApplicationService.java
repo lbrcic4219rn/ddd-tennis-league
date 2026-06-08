@@ -15,8 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,7 +23,7 @@ public class MembershipApplicationService {
     private final GroupRepo groupRepo;
     private final LeagueRepo leagueRepo;
 
-    public String joinGroup(PlayerId playerId, GroupId groupId) {
+    public String joinGroup(PlayerId playerId, GroupId groupId) throws IllegalArgumentException {
         League league = leagueRepo.findByGroupId(groupId).orElseThrow(
                 () -> new IllegalArgumentException("Group not part of any league: " + groupId));
 

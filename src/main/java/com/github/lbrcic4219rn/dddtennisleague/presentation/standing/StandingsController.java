@@ -26,8 +26,13 @@ public class StandingsController {
 
     @PostMapping
     public ResponseEntity<String> createLeaderboard(@RequestBody CreateLeaderboardRequest request) {
-        String leaderboardId = standingsService.createLeaderboard(request.groupId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(leaderboardId);
+        try {
+            String leaderboardId = standingsService.createLeaderboard(new GroupId(UUID.fromString(request.groupId())));
+            return ResponseEntity.status(HttpStatus.CREATED).body(leaderboardId);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
     }
 
     @GetMapping("/{leaderboardId}")

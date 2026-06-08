@@ -42,7 +42,7 @@ public class MatchController {
     }
 
     @PostMapping("/{matchId}/complete")
-    public ResponseEntity<Void> completeMatch(
+    public ResponseEntity<String> completeMatch(
             @PathVariable String matchId,
             @RequestBody CompleteMatchRequest request) {
         try {
