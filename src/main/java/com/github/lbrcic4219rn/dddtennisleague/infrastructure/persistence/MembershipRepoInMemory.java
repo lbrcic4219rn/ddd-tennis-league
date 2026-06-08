@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 public class MembershipRepoInMemory implements MembershipRepo {
@@ -37,7 +36,7 @@ public class MembershipRepoInMemory implements MembershipRepo {
         return memberships.values()
                 .stream()
                 .filter(m -> m.getGroupId().equals(groupId))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -45,7 +44,7 @@ public class MembershipRepoInMemory implements MembershipRepo {
         return memberships.values()
                 .stream()
                 .filter(m -> m.getPlayerId().equals(playerId))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

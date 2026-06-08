@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +34,7 @@ public class PlayerApplicationService {
                 .values()
                 .stream()
                 .map(this::getPlayerDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public void removePlayer(PlayerId playerId) throws IllegalArgumentException {

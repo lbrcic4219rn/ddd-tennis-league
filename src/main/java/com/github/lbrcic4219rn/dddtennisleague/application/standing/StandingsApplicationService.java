@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
@@ -67,7 +66,7 @@ public class StandingsApplicationService {
         return leaderboardRepo.findAll()
                 .stream()
                 .map(this::getLeaderboardDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public void removeLeaderboard(LeaderboardId leaderboardId) {

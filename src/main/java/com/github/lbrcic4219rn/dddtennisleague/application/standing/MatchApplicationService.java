@@ -15,8 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -66,14 +64,14 @@ public class MatchApplicationService {
         return matchRepo.findByGroupId(groupId)
                 .stream()
                 .map(this::getMatchDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<MatchDto> getAllMatches() {
         return matchRepo.findAll()
                 .stream()
                 .map(this::getMatchDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public void removeMatch(MatchId matchId) {

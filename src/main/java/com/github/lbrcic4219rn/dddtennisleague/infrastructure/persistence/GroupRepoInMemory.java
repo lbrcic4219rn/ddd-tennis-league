@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 public class GroupRepoInMemory implements GroupRepo {
@@ -36,7 +35,7 @@ public class GroupRepoInMemory implements GroupRepo {
         return groups.values()
                 .stream()
                 .filter(group -> group.getLeagueId().equals(leagueId))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public Map<GroupId, Group> findAll() {
