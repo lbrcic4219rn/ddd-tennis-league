@@ -17,7 +17,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -47,50 +46,23 @@ public class LeagueApplicationService {
         return groupId;
     }
 
-    public LeagueDto getLeagueById(LeagueId leagueId) {
-        Optional<League> league = leagueRepo.findById(leagueId);
-        if (league.isEmpty()) {
-            return null;
-        }
-
-        List<GroupDto> groupDtos = league.get()
-                .getGroups()
-                .stream()
-                .map(this::getGroupDto)
-                .collect(Collectors.toList());
-
-        return new LeagueDto(
-                league.get().getLeagueId().value().toString(),
-                league.get().getName(),
-                league.get().getSeason().startDate(),
-                league.get().getSeason().endDate(),
-                groupDtos
-        );
+    public LeagueDto getLeagueById(LeagueId leagueId) throws IllegalArgumentException {
+        League league = leagueRepo.findById(leagueId)
+                .orElseThrow(IllegalArgumentException::new);
+        return getLeagueDto(league);
     }
 
     public GroupDto getGroupById(GroupId groupId) {
-        Optional<Group> group = groupRepo.findById(groupId);
-        return group.map(this::getGroupDto).orElse(null);
+        Group group = groupRepo.findById(groupId).orElseThrow(IllegalArgumentException::new);
+        return getGroupDto(group);
     }
 
     public List<LeagueDto> getAllLeagues() {
         return leagueRepo.findAll()
                 .values()
                 .stream()
-                .map(league -> {
-                    List<GroupDto> groupDtos = league.getGroups()
-                            .stream()
-                            .map(this::getGroupDto)
-                            .toList();
-                    return new LeagueDto(
-                            league.getLeagueId().value().toString(),
-                            league.getName(),
-                            league.getSeason().startDate(),
-                            league.getSeason().endDate(),
-                            groupDtos
-                    );
-                })
-                .collect(Collectors.toList());
+                .map(this::getLeagueDto)
+                .toList();
     }
 
     public void removeLeague(LeagueId leagueId) throws IllegalArgumentException {
@@ -111,6 +83,19 @@ public class LeagueApplicationService {
                 group.getLeagueId().value().toString(),
                 group.getLevel().toString(),
                 group.getMemberships().size()
+        );
+    }
+
+    private LeagueDto getLeagueDto(League league) {
+        return new LeagueDto(
+                league.getLeagueId().value().toString(),
+                league.getName(),
+                league.getSeason().startDate(),
+                league.getSeason().endDate(),
+                league.getGroups()
+                        .stream()
+                        .map(this::getGroupDto)
+                        .toList()
         );
     }
 }

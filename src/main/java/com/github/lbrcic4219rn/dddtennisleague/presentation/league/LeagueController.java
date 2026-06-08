@@ -41,11 +41,12 @@ public class LeagueController {
 
     @GetMapping("/{leagueId}")
     public ResponseEntity<LeagueDto> getLeague(@PathVariable String leagueId) {
-        LeagueDto league = leagueService.getLeagueById(new LeagueId(UUID.fromString(leagueId)));
-        if (league == null) {
+        try {
+            LeagueDto league = leagueService.getLeagueById(new LeagueId(UUID.fromString(leagueId)));
+            return ResponseEntity.ok(league);
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(league);
     }
 
     @GetMapping
@@ -76,11 +77,12 @@ public class LeagueController {
 
     @GetMapping("/groups/{groupId}")
     public ResponseEntity<GroupDto> getGroup(@PathVariable String groupId) {
-        GroupDto group = leagueService.getGroupById(new GroupId(UUID.fromString(groupId)));
-        if (group == null) {
+        try {
+            GroupDto group = leagueService.getGroupById(new GroupId(UUID.fromString(groupId)));
+            return ResponseEntity.ok(group);
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(group);
     }
 
     @DeleteMapping("/groups/{groupId}")

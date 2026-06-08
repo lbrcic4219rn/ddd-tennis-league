@@ -74,7 +74,6 @@ public class StandingsApplicationService {
         leaderboardRepo.remove(leaderboardId);
     }
 
-
     private List<StandingEntry> recalculateStandings(GroupId groupId) {
         List<Match> matches = matchRepo.findByGroupId(groupId);
         Map<PlayerId, Double>  points = new HashMap<>();
@@ -100,8 +99,8 @@ public class StandingsApplicationService {
             wins.merge(winner,1,Integer::sum);
             losses.merge(loser,1,Integer::sum);
 
-            setsWon .merge(winner, 2, Integer::sum);
-            setsWon .merge(loser,  match.getLoserSetsWon(),  Integer::sum);
+            setsWon.merge(winner, 2, Integer::sum);
+            setsWon.merge(loser,  match.getLoserSetsWon(),  Integer::sum);
         }
 
         Map<PlayerId, Map<PlayerId, Long>> h2h = buildH2HIndex(matches);

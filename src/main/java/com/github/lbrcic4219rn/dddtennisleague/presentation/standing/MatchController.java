@@ -4,6 +4,7 @@ import com.github.lbrcic4219rn.dddtennisleague.application.standing.dto.MatchDto
 import com.github.lbrcic4219rn.dddtennisleague.application.standing.MatchApplicationService;
 import com.github.lbrcic4219rn.dddtennisleague.application.standing.dto.SetDto;
 import com.github.lbrcic4219rn.dddtennisleague.domain.league.id.GroupId;
+import com.github.lbrcic4219rn.dddtennisleague.domain.player.id.PlayerId;
 import com.github.lbrcic4219rn.dddtennisleague.domain.standing.id.MatchId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,32 +28,42 @@ public class MatchController {
 
     @PostMapping
     public ResponseEntity<String> createMatch(@RequestBody CreateMatchRequest request) {
-        String matchId = matchService.createMatch(
-                request.groupId(),
-                request.player1Id(),
-                request.player2Id()
-        ).value().toString();
-        return ResponseEntity.status(HttpStatus.CREATED).body(matchId);
+        try {
+            String matchId = matchService.createMatch(
+                    new GroupId(UUID.fromString(request.groupId())),
+                    new PlayerId(UUID.fromString(request.player1Id())),
+                    new PlayerId(UUID.fromString(request.player2Id()))
+            ).value().toString();
+            return ResponseEntity.status(HttpStatus.CREATED).body(matchId);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
     }
 
     @PostMapping("/{matchId}/complete")
     public ResponseEntity<Void> completeMatch(
             @PathVariable String matchId,
             @RequestBody CompleteMatchRequest request) {
-        matchService.completeMatch(
-                new MatchId(UUID.fromString(matchId)),
-                request.sets()
-        );
-        return ResponseEntity.ok().build();
+        try {
+            matchService.completeMatch(
+                    new MatchId(UUID.fromString(matchId)),
+                    request.sets()
+            );
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/{matchId}")
     public ResponseEntity<MatchDto> getMatch(@PathVariable String matchId) {
-        MatchDto match = matchService.getMatchById(new MatchId(UUID.fromString(matchId)));
-        if (match == null) {
+        try {
+            MatchDto match = matchService.getMatchById(new MatchId(UUID.fromString(matchId)));
+            return ResponseEntity.ok(match);
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(match);
     }
 
     @GetMapping("/group/{groupId}")
@@ -69,8 +80,12 @@ public class MatchController {
 
     @DeleteMapping("/{matchId}")
     public ResponseEntity<Void> removeMatch(@PathVariable String matchId) {
-        matchService.removeMatch(new MatchId(UUID.fromString(matchId)));
-        return ResponseEntity.noContent().build();
+        try {
+            matchService.removeMatch(new MatchId(UUID.fromString(matchId)));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     public record CreateMatchRequest(

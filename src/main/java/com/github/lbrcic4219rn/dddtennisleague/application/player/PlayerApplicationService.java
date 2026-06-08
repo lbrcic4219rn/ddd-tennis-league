@@ -27,14 +27,14 @@ public class PlayerApplicationService {
 
     public PlayerDto getPlayerById(PlayerId playerId) {
         Optional<Player> player = playerRepo.findById(playerId);
-        return player.map(this::convertToDto).orElse(null);
+        return player.map(this::getPlayerDto).orElse(null);
     }
 
     public List<PlayerDto> getAllPlayers() {
         return playerRepo.findAll()
                 .values()
                 .stream()
-                .map(this::convertToDto)
+                .map(this::getPlayerDto)
                 .collect(Collectors.toList());
     }
 
@@ -43,7 +43,7 @@ public class PlayerApplicationService {
         playerRepo.remove(playerId);
     }
 
-    private PlayerDto convertToDto(Player player) {
+    private PlayerDto getPlayerDto(Player player) {
         return new PlayerDto(
                 player.getId().value().toString(),
                 player.getFirstName(),
@@ -54,5 +54,6 @@ public class PlayerApplicationService {
                 player.getRegisteredAt()
         );
     }
+
 }
 

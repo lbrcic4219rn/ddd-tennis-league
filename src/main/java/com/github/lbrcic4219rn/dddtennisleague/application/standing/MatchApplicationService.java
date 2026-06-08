@@ -25,21 +25,16 @@ public class MatchApplicationService {
     private final MembershipRepo membershipRepo;
     private final StandingsApplicationService standingsService;
 
-    public MatchId createMatch(String groupId, String player1Id, String player2Id) {
-        GroupId groupIdObj = new GroupId(UUID.fromString(groupId));
-        PlayerId homePlayerIdObj = new PlayerId(UUID.fromString(player1Id));
-        PlayerId awayPlayerIdObj = new PlayerId(UUID.fromString(player2Id));
+    public MatchId createMatch(GroupId groupId, PlayerId player1Id, PlayerId player2Id) {
 
-        if (homePlayerIdObj.equals(awayPlayerIdObj)) {
-            throw new IllegalArgumentException("Home and away player must be different");
+        if (player1Id.equals(player2Id)) {
+            throw new IllegalArgumentException("Players must be different");
         }
-
-        membershipRepo.findByGroupIdAndPlayerId(groupIdObj, homePlayerIdObj)
+        membershipRepo.findByGroupIdAndPlayerId(groupId, player1Id)
                 .orElseThrow(() -> new IllegalArgumentException("Player is not a member of the group: " + player1Id));
-        membershipRepo.findByGroupIdAndPlayerId(groupIdObj, awayPlayerIdObj)
+        membershipRepo.findByGroupIdAndPlayerId(groupId, player2Id)
                 .orElseThrow(() -> new IllegalArgumentException("Player is not a member of the group: " + player2Id));
-
-        Match match = new Match(groupIdObj, homePlayerIdObj, awayPlayerIdObj);
+        Match match = new Match(groupId, player1Id, player2Id);
         matchRepo.save(match);
 
         return match.getId();
@@ -53,10 +48,7 @@ public class MatchApplicationService {
         }
 
         List<Set> sets = completedSets.stream()
-                .map(dto -> new Set(dto.player1Games(), dto.player2Games()
-                        , dto.tiebreakDto() != null
-                        ? new TieBreak(dto.tiebreakDto().player1Points(), dto.tiebreakDto().player2Points())
-                        : null))
+                .map(this::getSetFromDto)
                 .toList();
 
         Match matchObj = match.get();
@@ -65,30 +57,31 @@ public class MatchApplicationService {
         standingsService.updateStandingsForMatch(matchObj);
     }
 
-    public MatchDto getMatchById(MatchId matchId) {
-        Optional<Match> match = matchRepo.findById(matchId);
-        return match.map(this::convertToDto).orElse(null);
+    public MatchDto getMatchById(MatchId matchId) throws IllegalAccessError {
+        Match match = matchRepo.findById(matchId).orElseThrow(IllegalAccessError::new);
+        return getMatchDto(match);
     }
 
     public List<MatchDto> getMatchesByGroup(GroupId groupId) {
         return matchRepo.findByGroupId(groupId)
                 .stream()
-                .map(this::convertToDto)
+                .map(this::getMatchDto)
                 .collect(Collectors.toList());
     }
 
     public List<MatchDto> getAllMatches() {
         return matchRepo.findAll()
                 .stream()
-                .map(this::convertToDto)
+                .map(this::getMatchDto)
                 .collect(Collectors.toList());
     }
 
     public void removeMatch(MatchId matchId) {
+        matchRepo.findById(matchId).orElseThrow(IllegalAccessError::new);
         matchRepo.remove(matchId);
     }
 
-    private MatchDto convertToDto(Match match) {
+    private MatchDto getMatchDto(Match match) {
         return new MatchDto(
                 match.getId().value().toString(),
                 match.getGroupId().value().toString(),
@@ -96,6 +89,13 @@ public class MatchApplicationService {
                 match.getPlayer2id().value().toString(),
                 match.getWinner().value() != null ? match.getWinner().value().toString() : ""
         );
+    }
+
+    private Set getSetFromDto(SetDto dto) {
+        return new Set(dto.player1Games(), dto.player2Games()
+                , dto.tiebreakDto() != null
+                ? new TieBreak(dto.tiebreakDto().player1Points(), dto.tiebreakDto().player2Points())
+                : null);
     }
 }
 
