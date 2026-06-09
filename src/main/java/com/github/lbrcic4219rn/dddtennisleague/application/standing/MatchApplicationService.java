@@ -85,7 +85,7 @@ public class MatchApplicationService {
                 match.getGroupId().value().toString(),
                 match.getPlayer1id().value().toString(),
                 match.getPlayer2id().value().toString(),
-                match.getWinner().value() != null ? match.getWinner().value().toString() : ""
+                match.getWinner() != null ? match.getWinner().value().toString() : ""
         );
     }
 
